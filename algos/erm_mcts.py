@@ -78,7 +78,6 @@ class ERMMCTS:
 
     def _hash_state(self, state):
         node_repr = str(state["state"]) + "_" + \
-                    np.array2string(state["occupancy"]) + "_" + \
                     str(state["t"])
         return hash(node_repr)
 
@@ -97,11 +96,12 @@ class ERMMCTS:
         decision_node = self.root
         decision_node.visits += 1 # Increment visits counter at root.
 
+        depth = 1
         # Selection and expansion.
         while (not decision_node.is_final) and decision_node.visits > 0:
 
             # Select action (and retrieve the random node associated with the action).
-            a = self.select(decision_node)
+            a = self.select(decision_node, depth)
             random_node = decision_node.get_random_node(a)
 
             # Generate the next decision node (next state).
@@ -117,6 +117,8 @@ class ERMMCTS:
 
             decision_node = new_decision_node
 
+            depth += 1
+
         # Simulation (rollout).
         cumulative_cost = self.rollout(decision_node)
 
@@ -124,23 +126,26 @@ class ERMMCTS:
         while not decision_node.is_root:
             decision_node.visits += 1
             random_node = decision_node.father
-            cumulative_cost += random_node.cost
+            cumulative_cost = random_node.cost + self.env.gamma*cumulative_cost
             random_node.costs_list.append(cumulative_cost)
             random_node.visits += 1
             decision_node = random_node.father
 
-    def select(self, x: DecisionNode):
+    def select(self, x: DecisionNode, depth: int):
         """
         Selects the action to play from the current decision node.
 
         :param x: (DecisionNode) current decision node.
+        :param depth: (int) depth of decision node.
+
         :return: (int) action.
         """
         def scoring(k):
             if x.children[k].visits > 0:
                 costs = np.array(x.children[k].costs_list)
                 N = len(costs)
-                erm = (1.0/self.erm_beta) * np.log((1.0/N) * np.sum(np.exp(self.erm_beta*costs)))
+                beta_depth = self.erm_beta * self.env.gamma**depth
+                erm = (1.0/beta_depth) * np.log((1.0/N) * np.sum(np.exp(beta_depth*costs)))
                 return erm - self.K_ucb * np.sqrt( np.log(x.visits) / x.children[k].visits)
             else:
                 return -np.inf
@@ -167,9 +172,10 @@ class ERMMCTS:
         :param initial_node: (DecisionNone) initial node.
         :return: (float) the cumulative cost observed during the tree traversing.
         """
-        cumulative_costs = 0
+        discounted_cumulative_costs = 0
         done = False
         s = initial_node.state
+        discount = 1.0
         while not done:
             if self.rollout_policy:
                 a = self.rollout_policy(s)
@@ -179,9 +185,10 @@ class ERMMCTS:
                 a = np.random.choice(avail_actions)
 
             s, c, done = self.env.step(s,a)
-            cumulative_costs += c
+            discounted_cumulative_costs += c * discount
+            discount *= self.env.gamma
 
-        return cumulative_costs
+        return discounted_cumulative_costs
 
     def learn(self, n_iters, progress_bar=False):
         """

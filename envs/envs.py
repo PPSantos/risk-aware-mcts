@@ -36,6 +36,7 @@ class Env:
 
         self.mdp = mdp
         self.H = H
+        self.gamma = mdp["gamma"]
 
     def available_actions(self, state):
         return self.mdp["actions"]

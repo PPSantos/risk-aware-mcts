@@ -8,7 +8,7 @@ import numpy as np
 from tqdm import tqdm
 
 from algos.erm_mcts import ERMMCTS
-from envs.envs import Occupancy_MDP, get_env
+from envs.envs import get_env, MDPs
 
 DATA_FOLDER_PATH = str(pathlib.Path(__file__).parent) + '/data/'
 print(DATA_FOLDER_PATH)
@@ -38,12 +38,9 @@ class NumpyEncoder(json.JSONEncoder):
             return obj.tolist()
         return json.JSONEncoder.default(self, obj)
 
-def simulate_ERM_MCTS(mdp, H, erm_beta, n_iter_per_timestep=1_000):
+def simulate_ERM_MCTS(env, H, erm_beta, n_iter_per_timestep=1_000):
 
-    # Instantiate environment.
-    env = get_env(mdp, H)
-
-    # Sample initial state from the extended MDP.
+    # Sample initial state.
     extended_state = env.sample_initial_state()
 
     # Simulate until termination.
@@ -57,7 +54,7 @@ def simulate_ERM_MCTS(mdp, H, erm_beta, n_iter_per_timestep=1_000):
 
         # Environment step.
         extended_state, cost, terminated = env.step(extended_state, selected_action)
-        cumulative_discounted_cost += cost * mdp["gamma"]*t
+        cumulative_discounted_cost += cost * env.mdp["gamma"]*t
 
     print("final discounted cumulative cost:", cumulative_discounted_cost)
 
@@ -70,11 +67,10 @@ def run(cfg, seed):
 
     np.random.seed(seed)
 
-    # Instantiate MDP.
-    env = get_env(cfg["env"])
-    print("env", env)
+    # Instantiate environment.
+    env = get_env(cfg["env"], cfg["H"])
 
-    mcts_f_val = simulate_ERM_MCTS(mdp=env,
+    mcts_f_val = simulate_ERM_MCTS(env=env,
                                H=cfg["H"],
                                erm_beta=cfg["erm_beta"],
                                n_iter_per_timestep=cfg["n_iter_per_timestep"])
@@ -85,10 +81,9 @@ def run(cfg, seed):
 def main(cfg):
 
     # Setup experiment data folder.
-    env = get_env(cfg["env"])
     exp_name = create_exp_name({'env': cfg['env'],
                                 'algo': "mcts",
-                                'gamma': env['gamma'],
+                                'gamma': MDPs[cfg['env']]['gamma'],
                                 'erm_beta': cfg['erm_beta'],
                                 })
     exp_path = DATA_FOLDER_PATH + exp_name
@@ -110,8 +105,7 @@ def main(cfg):
     exp_data = {}
     exp_data["config"] = cfg
     exp_data["f_vals"] = f_vals
-    exp_data["env"] = env
-    exp_data["env"]["f"] = None
+    exp_data["env"] = cfg['env']
 
     # Dump dict.
     f = open(exp_path + "/exp_data.json", "w")
