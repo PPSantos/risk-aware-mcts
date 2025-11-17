@@ -54,7 +54,7 @@ def simulate_ERM_MCTS(env, H, erm_beta, n_iter_per_timestep=1_000):
 
         # Environment step.
         extended_state, cost, terminated = env.step(extended_state, selected_action)
-        cumulative_discounted_cost += cost * env.mdp["gamma"]*t
+        cumulative_discounted_cost += cost * env.mdp["gamma"]**t
 
     print("final discounted cumulative cost:", cumulative_discounted_cost)
 
