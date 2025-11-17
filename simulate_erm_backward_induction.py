@@ -8,7 +8,7 @@ import numpy as np
 from tqdm import tqdm
 
 from algos.erm_backward_induction import ERMBackwardInduction
-from envs.envs import get_env, Occupancy_MDP
+from envs.envs import get_env, MDPs
 
 DATA_FOLDER_PATH = str(pathlib.Path(__file__).parent) + '/data/'
 print(DATA_FOLDER_PATH)
@@ -16,9 +16,8 @@ print(DATA_FOLDER_PATH)
 CONFIG = {
     "N": 1, # Number of experiments to run.
     "num_processors": 1,
-    "env": "linear_mdp_fabio",
-    "H": 5, # Truncation length.
-    "n_iter_per_timestep": 1_000, # MCTS number of tree expansion steps per timestep.
+    "env": "four_state_mdp",
+    "H": 100, # Truncation length.
     "erm_beta": 0.1,
 }
 
@@ -38,31 +37,28 @@ class NumpyEncoder(json.JSONEncoder):
             return obj.tolist()
         return json.JSONEncoder.default(self, obj)
 
-def simulate_ERM_backward_induction(mdp, H, erm_beta, n_iter_per_timestep=1_000):
+def simulate_ERM_backward_induction(env, H, erm_beta):
 
     # Run ERMBackwardInduction algorithm.
-    erm_algo = ERMBackwardInduction(mdp, mdp["gamma"], erm_beta, H)
+    erm_algo = ERMBackwardInduction(env, erm_beta, H)
     erm_opt_policy = erm_algo.compute()
 
-    # Instantiate extended MDP.
-    occupancy_mdp = Occupancy_MDP(mdp, H)
-
-    # Sample initial state from the extended MDP.
-    extended_state = occupancy_mdp.sample_initial_state()
+    # Sample initial state.
+    extended_state = env.sample_initial_state()
 
     # Simulate until termination.
-    cumulative_cost = 0.0
+    cumulative_discounted_cost = 0.0
     for t in tqdm(range(H)):
 
         selected_action = erm_opt_policy[t, extended_state["state"]]
 
         # Environment step.
-        extended_state, cost, terminated = occupancy_mdp.step(extended_state, selected_action)
-        cumulative_cost += cost
+        extended_state, cost, terminated = env.step(extended_state, selected_action)
+        cumulative_discounted_cost += cost * env.mdp["gamma"]**t
 
-    print("final cost:", cumulative_cost)
+    print("final discounted cumulative cost:", cumulative_discounted_cost)
 
-    return cumulative_cost
+    return cumulative_discounted_cost
 
 
 def run(cfg, seed):
@@ -71,28 +67,22 @@ def run(cfg, seed):
 
     np.random.seed(seed)
 
-    # Instantiate MDP.
-    env = get_env(cfg["env"])
-    print("env", env)
+    # Instantiate environment.
+    env = get_env(cfg["env"], cfg["H"])
 
-    mcts_f_val = simulate_ERM_backward_induction(mdp=env,
+    mcts_f_val = simulate_ERM_backward_induction(env=env,
                                H=cfg["H"],
-                               erm_beta=cfg["erm_beta"],
-                               n_iter_per_timestep=cfg["n_iter_per_timestep"])
+                               erm_beta=cfg["erm_beta"])
 
     return mcts_f_val
 
 
 def main(cfg):
 
-    if cfg["env"] not in ["linear_mdp", "linear_mdp_fabio"]:
-        raise ValueError("ERM backward induction only works for the linear MDP environment.")
-
     # Setup experiment data folder.
-    env = get_env(cfg["env"])
     exp_name = create_exp_name({'env': cfg['env'],
                                 'algo': "erm-backward-induction",
-                                'gamma': env['gamma'],
+                                'gamma': MDPs[cfg['env']]['gamma'],
                                 'erm_beta': cfg['erm_beta'],
                                 })
     exp_path = DATA_FOLDER_PATH + exp_name
@@ -114,8 +104,7 @@ def main(cfg):
     exp_data = {}
     exp_data["config"] = cfg
     exp_data["f_vals"] = f_vals
-    exp_data["env"] = env
-    exp_data["env"]["f"] = None
+    exp_data["env"] = cfg['env']
 
     # Dump dict.
     f = open(exp_path + "/exp_data.json", "w")

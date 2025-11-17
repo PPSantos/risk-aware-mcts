@@ -2,9 +2,9 @@ import numpy as np
 
 class ERMBackwardInduction(object):
 
-    def __init__(self, mdp, gamma, beta, horizon):
-        self.mdp = mdp
-        self.gamma = gamma
+    def __init__(self, env, beta, horizon):
+        self.mdp = env.mdp
+        self.gamma = env.gamma
         self.beta = beta
         self.horizon = horizon
 
