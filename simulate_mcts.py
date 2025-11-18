@@ -43,18 +43,26 @@ def simulate_ERM_MCTS(env, H, erm_beta, n_iter_per_timestep=1_000):
     # Sample initial state.
     extended_state = env.sample_initial_state()
 
+    mcts = ERMMCTS(initial_state=extended_state, env=env, K_ucb=np.sqrt(2),
+                    erm_beta=erm_beta, rollout_policy=None)
+
     # Simulate until termination.
     cumulative_discounted_cost = 0.0
     for t in tqdm(range(H)):
 
-        mcts = ERMMCTS(initial_state=extended_state, env=env, K_ucb=np.sqrt(2),
-                        erm_beta=erm_beta, rollout_policy=None)
         mcts.learn(n_iters=n_iter_per_timestep)
         selected_action = mcts.best_action()
+        print("selected_action", selected_action)
 
         # Environment step.
         extended_state, cost, terminated = env.step(extended_state, selected_action)
         cumulative_discounted_cost += cost * env.mdp["gamma"]**t
+
+        updated_root = mcts.update_root_node(selected_action, extended_state)
+        if not updated_root:
+            # Next state is not present in the tree - build a new tree.
+            mcts = ERMMCTS(initial_state=extended_state, env=env, K_ucb=np.sqrt(2),
+                    erm_beta=erm_beta, rollout_policy=None)
 
     print("final discounted cumulative cost:", cumulative_discounted_cost)
 

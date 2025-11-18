@@ -214,6 +214,21 @@ class ERMMCTS:
         index_best_action = np.argmax(number_of_visits_children)
 
         return list(self.root.children.values())[index_best_action].action
+    
+    def update_root_node(self, selected_action : int, new_state : dict):
+        """
+            Updates the root node of the planning tree.
+
+            :param: (int) selected_action: previously selected action.
+            :param: (dict) new_state: the new state of the environment.
+        """
+        next_state_hash = self._hash_state(new_state)
+        if next_state_hash in self.root.children[selected_action].children:
+            self.root = self.root.children[selected_action].children[next_state_hash]
+            self.root.is_root = True
+            return True
+        else:
+            return False
 
 
 if __name__ == "__main__":
