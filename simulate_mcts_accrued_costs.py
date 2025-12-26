@@ -98,7 +98,6 @@ def simulate_accrued_MCTS(env, H, erm_beta, n_iter_per_timestep=1_000):
 
         mcts.learn(n_iters=n_iter_per_timestep)
         selected_action = mcts.best_action()
-        print("selected_action", selected_action)
 
         # Environment step.
         extended_state, cost, terminated = env.step(extended_state, selected_action)
