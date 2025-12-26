@@ -1,4 +1,4 @@
-from simulate_mcts import main as run
+from simulate_mcts_accrued_costs import main as run
 
 CONFIG = {
     "N": 100, # Number of experiments to run.
@@ -10,7 +10,7 @@ CONFIG = {
 }
 
 exp_ids = []
-for erm_beta in [0.1, 5.0]:
+for erm_beta in [0.1, 0.5, 1.0]:
     print("erm_beta=", erm_beta)
     CONFIG["erm_beta"] = erm_beta
     exp_id = run(CONFIG)
