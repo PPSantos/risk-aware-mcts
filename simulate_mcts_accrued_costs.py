@@ -101,7 +101,7 @@ def simulate_accrued_MCTS(env, H, erm_beta, n_iter_per_timestep=1_000):
 
         # Environment step.
         extended_state, cost, terminated = env.step(extended_state, selected_action)
-        cumulative_cost += cost
+        cumulative_cost += env.mdp["C"][extended_state["state"], selected_action]
 
         updated_root = mcts.update_root_node(selected_action, extended_state)
         if not updated_root:
