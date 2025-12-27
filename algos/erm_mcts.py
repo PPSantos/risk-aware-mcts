@@ -96,7 +96,7 @@ class ERMMCTS:
         decision_node = self.root
         decision_node.visits += 1 # Increment visits counter at root.
 
-        depth = 1
+        depth = 0
         # Selection and expansion.
         while (not decision_node.is_final) and decision_node.visits > 0:
 
