@@ -1,6 +1,7 @@
+import os
+import sys
 import json
 import multiprocessing as mp
-import os
 import pathlib
 from datetime import datetime
 
@@ -24,7 +25,7 @@ CONFIG = {
 
 def create_exp_name(args: dict) -> str:
     return args['env'] + '_' + args['algo'] + '_gamma_' + str(args['gamma']) + '_beta_' + str(args['erm_beta']) + '_' + \
-        str(datetime.today().strftime('%Y-%m-%d-%H-%M-%S'))
+        str(datetime.today().strftime('%Y-%m-%d-%H-%M-%S')) + str(args['seed'])
 
 
 class NumpyEncoder(json.JSONEncoder):
@@ -88,13 +89,14 @@ def run(cfg, seed):
     return mcts_f_val
 
 
-def main(cfg):
+def main(cfg, arg_seed=0):
 
     # Setup experiment data folder.
     exp_name = create_exp_name({'env': cfg['env'],
                                 'algo': "mcts",
                                 'gamma': MDPs[cfg['env']]['gamma'],
                                 'erm_beta': cfg['erm_beta'],
+                                'seed': arg_seed,
                                 })
     exp_path = DATA_FOLDER_PATH + exp_name
     os.makedirs(exp_path, exist_ok=True)
@@ -106,7 +108,7 @@ def main(cfg):
     print('\nSimulating...')
 
     with mp.Pool(processes=cfg["num_processors"]) as pool:
-        f_vals = pool.starmap(run, [(cfg, t) for t in range(cfg["N"])])
+        f_vals = pool.starmap(run, [(cfg, (1_000*arg_seed) + t) for t in range(cfg["N"])])
         pool.close()
         pool.join()
 
@@ -129,4 +131,7 @@ def main(cfg):
 
 
 if __name__ == "__main__":
-    main(cfg = CONFIG)
+    if len(sys.argv) > 1:
+        main(CONFIG, int(sys.argv[1]))
+    else:
+        main(CONFIG)

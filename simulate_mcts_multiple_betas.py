@@ -1,4 +1,4 @@
-from simulate_mcts_accrued_costs import main as run
+""" from simulate_mcts_accrued_costs import main as run
 
 CONFIG = {
     "N": 100, # Number of experiments to run.
@@ -17,3 +17,4 @@ for erm_beta in [0.1, 0.5, 1.0]:
     exp_ids.append(exp_id)
 
 print(exp_ids)
+ """
