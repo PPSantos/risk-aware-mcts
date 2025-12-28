@@ -66,12 +66,13 @@ class RandomNode:
 
 class ERMMCTS:
 
-    def __init__(self, initial_state, env, K_ucb, erm_beta, rollout_policy=None):
+    def __init__(self, initial_state, env, K_ucb, erm_beta, rollout_policy=None, root_depth=0):
 
         self.K_ucb = K_ucb
         self.env = env
         self.rollout_policy = rollout_policy
         self.erm_beta = erm_beta
+        self.root_depth = 0
 
         # Create tree.
         self.root = self.init_tree(initial_state)
@@ -80,6 +81,9 @@ class ERMMCTS:
         node_repr = str(state["state"]) + "_" + \
                     str(state["t"])
         return hash(node_repr)
+    
+    def set_root_depth(self, new_root_depth : int):
+        self.root_depth = new_root_depth
 
     def init_tree(self, initial_state):
         # Initialize tree.
@@ -101,7 +105,7 @@ class ERMMCTS:
         while (not decision_node.is_final) and decision_node.visits > 0:
 
             # Select action (and retrieve the random node associated with the action).
-            a = self.select(decision_node, depth)
+            a = self.select(decision_node, self.root_depth + depth)
             random_node = decision_node.get_random_node(a)
 
             # Generate the next decision node (next state).
