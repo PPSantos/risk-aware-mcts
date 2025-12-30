@@ -14,8 +14,8 @@ DATA_FOLDER_PATH = str(pathlib.Path(__file__).parent) + '/data/'
 print(DATA_FOLDER_PATH)
 
 CONFIG = {
-    "N": 1, # Number of experiments to run.
-    "num_processors": 1,
+    "N": 100, # Number of experiments to run.
+    "num_processors": 10,
     "env": "four_state_mdp",
     "H": 100, # Truncation length.
     "n_iter_per_timestep": 1_000, # MCTS number of tree expansion steps per timestep.
@@ -134,7 +134,7 @@ def main(cfg):
 
     # Setup experiment data folder.
     exp_name = create_exp_name({'env': cfg['env'],
-                                'algo': "mcts",
+                                'algo': "acc-mcts",
                                 'gamma': MDPs[cfg['env']]['gamma'],
                                 'erm_beta': cfg['erm_beta'],
                                 })

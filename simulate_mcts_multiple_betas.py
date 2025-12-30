@@ -1,11 +1,11 @@
-""" from simulate_mcts_accrued_costs import main as run
+from simulate_mcts_accrued_costs import main as run
 
 CONFIG = {
     "N": 100, # Number of experiments to run.
-    "num_processors": 50,
+    "num_processors": 10,
     "env": "four_state_mdp",
     "H": 100, # Truncation length.
-    "n_iter_per_timestep": 100, # MCTS number of tree expansion steps per timestep.
+    "n_iter_per_timestep": 1_000, # MCTS number of tree expansion steps per timestep.
     # "erm_beta": 0.1,
 }
 
@@ -17,4 +17,3 @@ for erm_beta in [0.1, 0.5, 1.0]:
     exp_ids.append(exp_id)
 
 print(exp_ids)
- """
