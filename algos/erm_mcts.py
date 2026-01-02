@@ -150,7 +150,7 @@ class ERMMCTS:
                 N = len(costs)
                 beta_depth = self.erm_beta * self.env.gamma**depth
                 erm = (1.0/beta_depth) * np.log((1.0/N) * np.sum(np.exp(beta_depth*costs)))
-                return erm - self.K_ucb * np.sqrt( np.log(x.visits) / x.children[k].visits)
+                return erm - self.K_ucb * np.sqrt( np.sqrt(x.visits) / x.children[k].visits)
             else:
                 return -np.inf
 

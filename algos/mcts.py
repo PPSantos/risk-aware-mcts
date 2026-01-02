@@ -167,7 +167,7 @@ class MCTS:
         def scoring(k):
             if x.children[k].visits > 0:
                 return x.children[k].cumulative_reward/x.children[k].visits + \
-                    self.K_ucb*np.sqrt(np.log(x.visits)/x.children[k].visits)
+                    self.K_ucb*np.sqrt(np.sqrt(x.visits)/x.children[k].visits)
             else:
                 return np.inf
 
