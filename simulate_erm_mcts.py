@@ -20,7 +20,7 @@ CONFIG = {
     "env": "four_state_mdp",
     "H": 100, # Truncation length.
     "n_iter_per_timestep": 1_000, # MCTS number of tree expansion steps per timestep.
-    "erm_beta": 0.1,
+    "erm_beta": 1.0,
 }
 
 def create_exp_name(args: dict) -> str:
@@ -93,7 +93,7 @@ def main(cfg, arg_seed=0):
 
     # Setup experiment data folder.
     exp_name = create_exp_name({'env': cfg['env'],
-                                'algo': "mcts",
+                                'algo': "erm-mcts",
                                 'gamma': MDPs[cfg['env']]['gamma'],
                                 'erm_beta': cfg['erm_beta'],
                                 'seed': arg_seed,
