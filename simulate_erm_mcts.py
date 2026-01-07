@@ -89,7 +89,10 @@ def run(cfg, seed):
     return mcts_f_val
 
 
-def main(cfg, arg_seed=0):
+def main(cfg, arg_seed=0, data_folder_path=None):
+
+    if not data_folder_path:
+        data_folder_path = DATA_FOLDER_PATH
 
     # Setup experiment data folder.
     exp_name = create_exp_name({'env': cfg['env'],
@@ -98,7 +101,7 @@ def main(cfg, arg_seed=0):
                                 'erm_beta': cfg['erm_beta'],
                                 'seed': arg_seed,
                                 })
-    exp_path = DATA_FOLDER_PATH + exp_name
+    exp_path = data_folder_path + exp_name
     os.makedirs(exp_path, exist_ok=True)
     print('\nExperiment ID:', exp_name)
     print('Config:')
@@ -131,7 +134,7 @@ def main(cfg, arg_seed=0):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        main(CONFIG, int(sys.argv[1]))
+    if len(sys.argv) > 2:
+        main(CONFIG, int(sys.argv[1]), sys.argv[2])
     else:
         main(CONFIG)
