@@ -280,3 +280,4 @@ plots_sideBySide.py
 
 data/
 figs
+*.out
