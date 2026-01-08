@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
 # Cliff MDP situation
 ncols=10
@@ -268,9 +269,6 @@ def get_env(env_name, H):
 
 
 if __name__ == "__main__":
-
-    import matplotlib.pyplot as plt
-
     env = get_env("obstacle_mdp", 100)
     print(obstacles)
     color_map = np.zeros(obstacles.shape + (3,), dtype=float)  # Create a color array, shape (height, width, 3)
