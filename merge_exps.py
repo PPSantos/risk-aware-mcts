@@ -22,6 +22,9 @@ def main(data_folder_path=None):
     for filename in glob.iglob(data_folder_path + '**/*.json', recursive=True):
         print(filename)
 
+        if filename == data_folder_path + "exp_data.json":
+            continue
+
         with open(filename, 'r') as f:
             data = json.load(f)
             data = json.loads(data)
@@ -30,7 +33,8 @@ def main(data_folder_path=None):
 
     merged_dict = data
     merged_dict["f_vals"] = f_vals_list
-    print(merged_dict)
+    # print(merged_dict)
+    print("Number of experiments:", len(merged_dict["f_vals"]))
 
     # Dump merged dict.
     f = open(data_folder_path + "/exp_data.json", "w")
