@@ -20,7 +20,7 @@ CONFIG = {
     "num_processors": 2,
     "env": "four_state_mdp",
     "H": 100, # Truncation length.
-    "n_iter_per_timestep": 100, # MCTS number of tree expansion steps per timestep.
+    "n_iter_per_timestep": 500, # MCTS number of tree expansion steps per timestep.
     "erm_beta": 0.5,
 }
 
