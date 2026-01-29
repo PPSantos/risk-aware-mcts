@@ -106,6 +106,11 @@ class ERMMCTS:
 
             # Select action (and retrieve the random node associated with the action).
             a = self.select(decision_node, self.root_depth + depth)
+
+            if decision_node.state["state"] == 22 and False:
+                print("State: ", decision_node.state)
+                print("Chosen action: ", a)
+
             random_node = decision_node.get_random_node(a)
 
             # Generate the next decision node (next state).
@@ -154,6 +159,22 @@ class ERMMCTS:
             else:
                 return -np.inf
 
+        if x.state["state"] == 22 and False:
+            print("Inside select method")
+            for child in x.children:
+                print("State", x.state)
+                print("Action:", child)
+                print("Scoring:", scoring(child))
+                if x.children[child].visits > 0:
+                    costs = np.array(x.children[child].costs_list)
+                    N = len(costs)
+                    beta_depth = self.erm_beta * self.env.gamma ** depth
+                    erm = (1.0 / beta_depth) * np.log((1.0 / N) * np.sum(np.exp(beta_depth * costs)))
+                    print("ERM:", erm)
+                    print("Bonus:", self.K_ucb * np.sqrt( np.sqrt(x.visits) / x.children[child].visits))
+
+
+
         return min(x.children, key=scoring)
 
     def select_outcome(self, random_node: RandomNode):
@@ -177,7 +198,7 @@ class ERMMCTS:
         :return: (float) the cumulative cost observed during the tree traversing.
         """
         discounted_cumulative_costs = 0
-        done = False
+        done = initial_node.is_final
         s = initial_node.state
         discount = 1.0
         while not done:

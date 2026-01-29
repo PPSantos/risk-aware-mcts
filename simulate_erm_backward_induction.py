@@ -12,13 +12,14 @@ from envs.envs import get_env, MDPs
 
 DATA_FOLDER_PATH = str(pathlib.Path(__file__).parent) + '/data/'
 print(DATA_FOLDER_PATH)
+DEBUG = True
 
 CONFIG = {
-    "N": 1, # Number of experiments to run.
-    "num_processors": 1,
+    "N": 100, # Number of experiments to run.
+    "num_processors": 10,
     "env": "four_state_mdp",
     "H": 100, # Truncation length.
-    "erm_beta": 0.1,
+    "erm_beta": 1.0,
 }
 
 def create_exp_name(args: dict) -> str:
@@ -50,11 +51,20 @@ def simulate_ERM_backward_induction(env, H, erm_beta):
     cumulative_discounted_cost = 0.0
     for t in tqdm(range(H)):
 
+        if DEBUG:
+            print("state:", extended_state)
+
         selected_action = erm_opt_policy[t, extended_state["state"]]
+
+        if DEBUG:
+            print("action:", selected_action)
 
         # Environment step.
         extended_state, cost, terminated = env.step(extended_state, selected_action)
         cumulative_discounted_cost += cost * env.mdp["gamma"]**t
+
+        if DEBUG:
+            print("cost:", cost)
 
     print("final discounted cumulative cost:", cumulative_discounted_cost)
 

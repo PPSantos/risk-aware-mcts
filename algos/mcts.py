@@ -194,7 +194,7 @@ class MCTS:
         :return: (float) the cumulative reward observed during the tree traversing.
         """
         R = 0
-        done = False
+        done = initial_node.is_final
         s = initial_node.state
         while not done:
             if self.rollout_policy:

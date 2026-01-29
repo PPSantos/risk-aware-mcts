@@ -13,14 +13,15 @@ from envs.envs import get_env, MDPs
 
 DATA_FOLDER_PATH = str(pathlib.Path(__file__).parent) + '/data/'
 print(DATA_FOLDER_PATH)
+DEBUG = False
 
 CONFIG = {
     "N": 2, # Number of experiments to run.
     "num_processors": 2,
     "env": "four_state_mdp",
     "H": 100, # Truncation length.
-    "n_iter_per_timestep": 1_000, # MCTS number of tree expansion steps per timestep.
-    "erm_beta": 1.0,
+    "n_iter_per_timestep": 100, # MCTS number of tree expansion steps per timestep.
+    "erm_beta": 0.5,
 }
 
 def create_exp_name(args: dict) -> str:
@@ -43,20 +44,30 @@ def simulate_ERM_MCTS(env, H, erm_beta, n_iter_per_timestep=1_000):
 
     # Sample initial state.
     extended_state = env.sample_initial_state()
+    K_ucb = np.sqrt(2) #np.sqrt(2)
 
-    mcts = ERMMCTS(initial_state=extended_state, env=env, K_ucb=np.sqrt(2),
+    mcts = ERMMCTS(initial_state=extended_state, env=env, K_ucb=K_ucb,
                     erm_beta=erm_beta, rollout_policy=None, root_depth=0)
 
     # Simulate until termination.
     cumulative_discounted_cost = 0.0
     for t in tqdm(range(H)):
 
+        if DEBUG:
+            print("state:", extended_state)
+
         mcts.learn(n_iters=n_iter_per_timestep)
         selected_action = mcts.best_action()
+
+        if DEBUG:
+            print("action:", selected_action)
 
         # Environment step.
         extended_state, cost, terminated = env.step(extended_state, selected_action)
         cumulative_discounted_cost += cost * env.mdp["gamma"]**t
+
+        if DEBUG:
+            print("cost:", cost)
 
         updated_root = mcts.update_root_node(selected_action, extended_state)
         if updated_root:
@@ -64,7 +75,7 @@ def simulate_ERM_MCTS(env, H, erm_beta, n_iter_per_timestep=1_000):
             mcts.set_root_depth(t+1)
         else:
             # Next state is not present in the tree - build a new tree.
-            mcts = ERMMCTS(initial_state=extended_state, env=env, K_ucb=np.sqrt(2),
+            mcts = ERMMCTS(initial_state=extended_state, env=env, K_ucb=K_ucb,
                     erm_beta=erm_beta, rollout_policy=None, root_depth=t+1)
 
     print("final discounted cumulative cost:", cumulative_discounted_cost)

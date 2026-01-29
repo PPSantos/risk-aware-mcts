@@ -13,14 +13,15 @@ from envs.envs import MDPs
 
 DATA_FOLDER_PATH = str(pathlib.Path(__file__).parent) + '/data/'
 print(DATA_FOLDER_PATH)
+DEBUG = False
 
 CONFIG = {
     "N": 2, # Number of experiments to run.
     "num_processors": 2,
     "env": "four_state_mdp",
     "H": 100, # Truncation length.
-    "n_iter_per_timestep": 1_000, # MCTS number of tree expansion steps per timestep.
-    "erm_beta": 1.0,
+    "n_iter_per_timestep": 100, # MCTS number of tree expansion steps per timestep.
+    "erm_beta": 0.1,
 }
 
 def create_exp_name(args: dict) -> str:
@@ -71,14 +72,20 @@ class AccruedCosts_MDP:
                                "accrued_costs": next_accrued_cost,
                                "t": next_timestep}
 
-        if next_timestep >= self.H:
-            cost = np.exp(self.erm_beta * accrued_costs_t)
+        if DEBUG:
+            print("state:", extended_state)
+            print("action:", a)
+            print("cost:", self.mdp["C"][state_t, a])
+
+        if next_timestep == self.H:
+            cost = np.exp(self.erm_beta * next_accrued_cost)
             terminated = True
         else:
             cost = 0.0
             terminated = False
 
         return next_extended_state, cost, terminated
+
 
     
 def get_env(env_name, H, erm_beta):
@@ -101,8 +108,8 @@ def simulate_accrued_MCTS(env, H, erm_beta, n_iter_per_timestep=1_000):
         selected_action = mcts.best_action()
 
         # Environment step.
-        extended_state, cost, terminated = env.step(extended_state, selected_action)
         cumulative_cost += env.mdp["C"][extended_state["state"], selected_action] * env.mdp["gamma"]**t
+        extended_state, cost, terminated = env.step(extended_state, selected_action)
 
         updated_root = mcts.update_root_node(selected_action, extended_state)
         if not updated_root:
