@@ -98,7 +98,9 @@ def simulate_accrued_MCTS(env, H, erm_beta, n_iter_per_timestep=1_000):
     # Sample initial state.
     extended_state = env.sample_initial_state()
 
-    mcts = MCTS(initial_state=extended_state, env=env, K_ucb=np.sqrt(2), rollout_policy=None)
+    K_ucb = np.sqrt(2)
+
+    mcts = MCTS(initial_state=extended_state, env=env, K_ucb=K_ucb, rollout_policy=None)
 
     # Simulate until termination.
     cumulative_cost = 0.0
@@ -114,7 +116,7 @@ def simulate_accrued_MCTS(env, H, erm_beta, n_iter_per_timestep=1_000):
         updated_root = mcts.update_root_node(selected_action, extended_state)
         if not updated_root:
             # Next state is not present in the tree - build a new tree.
-            mcts = MCTS(initial_state=extended_state, env=env, K_ucb=np.sqrt(2), rollout_policy=None)
+            mcts = MCTS(initial_state=extended_state, env=env, K_ucb=K_ucb, rollout_policy=None)
 
     print("final discounted cumulative cost:", cumulative_cost)
 

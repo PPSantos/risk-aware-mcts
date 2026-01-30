@@ -44,7 +44,7 @@ def simulate_ERM_MCTS(env, H, erm_beta, n_iter_per_timestep=1_000):
 
     # Sample initial state.
     extended_state = env.sample_initial_state()
-    K_ucb = np.sqrt(2) #np.sqrt(2)
+    K_ucb = np.sqrt(2)
 
     mcts = ERMMCTS(initial_state=extended_state, env=env, K_ucb=K_ucb,
                     erm_beta=erm_beta, rollout_policy=None, root_depth=0)
