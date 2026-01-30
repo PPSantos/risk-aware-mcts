@@ -12,7 +12,7 @@ from envs.envs import get_env, MDPs
 
 DATA_FOLDER_PATH = str(pathlib.Path(__file__).parent) + '/data/'
 print(DATA_FOLDER_PATH)
-DEBUG = True
+DEBUG = False
 
 CONFIG = {
     "N": 100, # Number of experiments to run.
